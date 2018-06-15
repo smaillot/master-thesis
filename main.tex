@@ -1,0 +1,92 @@
+\documentclass[a4paper, 12pt, oneside]{Project}
+\usepackage[utf8]{inputenc}
+
+
+
+\title       {Automatic registration of multiple kinect in indoor environment.}
+\UNIVERSITY  {UNIVERSITAT POLITÈCNICA DE CATALUNYA}
+\supervisor  {Joan Aranda}
+\examiner    {}
+\degree      {Master's degree in Automatic Control and Robotics}
+\authors     {Stéphane Maillot}
+\department  {Department of Systems Engineering, Automation \\ and Industrial Informatics}
+\faculty     {Barcelona School of Industrial Engineering}
+
+\bibliography{references}
+
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+
+\usepackage[acronym]{glossaries}
+\makeglossaries
+\input{glossary}
+\input{acronym}
+
+\begin{document}
+
+\maketitle
+
+% #############################################################################
+
+% It is better to have smaller font and larger 
+% line spacing than the other way round
+\setstretch{1.3}  
+
+% Define the page headers using the FancyHdr 
+% package and set up for one-sided printing
+\fancyhead{}      % Clears all page headers and footers
+\rhead{\thepage}  % Sets the right side header to show the page number
+\lhead{}          % Clears the left side page header
+\pagestyle{fancy}  % Finally, use the "fancy" page style 
+
+
+% #############################################################################
+%                               Acknowledgement
+% #############################################################################
+%\clearpage  
+%\input{docs/acknowledgement} 
+
+
+% #############################################################################
+%                               The Abstract Page
+% #############################################################################
+%\clearpage 
+%\input{Parts/abstract} 
+
+
+
+
+% #############################################################################
+%                                 CONTENTS
+% #############################################################################
+\clearpage 
+\pagestyle{fancy} 
+\lhead{\emph{Contents}}  
+\tableofcontents 
+
+\clearpage  
+\pagestyle{empty}  
+
+\mainmatter	  % Begin normal, numeric (1,2,3...) page numbering
+\pagestyle{fancy}  % Return the page headers back to the "fancy" style
+
+% Include the chapters of the thesis, as separate files
+% Just uncomment the lines as you write the chapters
+
+\input{chapters/Preface} 
+\input{chapters/Introduction} 
+\input{chapters/StateOfTheArt} 
+\input{chapters/Methodology} 
+\input{chapters/Implementation}
+\input{chapters/Results}
+\input{chapters/Conclusion}
+\input{chapters/FutureWork}
+
+\clearpage
+\printglossary[type=\acronymtype]
+\listoffigures
+\listoftables
+\printglossary
+
+
+\end{document}
