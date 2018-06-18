@@ -22,15 +22,17 @@ In this example I cut the point cloud to keep only the points inside the working
 
 Finally, point cloud filtering is also a way I considered to decrease the size of the point cloud. I used radius filtering to delete outliers (points that don’t have enough neighbors inside a chosen radius). However this filtering was needing a lot of computation time compared to the small improvement it provides in this case. I no longer use this filtering in the preprocessing stage. 
 
-\subsection{Plane Detection}
+\section{Plane Detection}
 
-The first step is to extract planes from the point clouds. I am using RANSAC algorithm to detect the most relevant plane of the cloud. Then by subtracting the corresponding points from the point cloud I apply again the RANSAC algorithm, by iterating this steps I can extract as many planes as needed and they are extracted by order of size. The idea is then to apply this plane detection on each point cloud in order to match these planes between both clouds. For testing purpose, in order not to spend much time trying to match the planes which is a difficult problem, I cut the input point clouds in a convenient way so that the planes are detected in the same order in both cameras. 
+The first step is to extract planes from the point clouds. I am using RANSAC algorithm to detect the most relevant plane of the cloud. Then by subtracting the corresponding points from the point cloud I apply again the RANSAC algorithm, by iterating this steps I can extract as many planes as needed and they are extracted by order of size. The idea is then to apply this plane detection on each point cloud in order to match these planes between both clouds. 
 
-\subsection{Plane Matching}
+\section{Plane Matching}
 
-The plane matching is the task of matching as many planes as possible between different cameras. These planes should be matched when they correspond to the same equation (for computing translation and rotation part of the transform) or when they are parallel (for computing rotation only). In the previous sections I simplified this problem using knowledge from the scene to ensure, by construction, that planes are extracted in the same order so that this plane matching step, is not useful in this case. These assumptions restrains me to extract only the biggest planes of the scene has the table and wall (but not the smallest ones that can’t be matched that easily). As a consequence I can directly implement the plane registration algorithm to get some results but this makes my registration not to be robust at all to camera displacement, occlusion etc. The plane matching part will have to be considered for making this work as expected. however, as this matching is probably the most challenging part, this simplification allows me to finishing the registration and get some results in this particular case. If these results are convincing, I will focus on plane matching for extending this technique to unknown scenes in a more robust and automated way than the currently implemented solution.
+The plane matching is the task of matching as many planes as possible between different cameras. These planes should be matched when they correspond to the same plane in the real scene. \\
+As explained for the implementation of the plane matching registration, I first tried to use global descriptors for this task. However, in our case, planes are too similar and this method is not consistently matching planes. \\
+A simpler but still efficient way I implemented this matching was using planes normals and matching planes with the more similar orientation. This way, as long as both point clouds are not built from 2 sensors with completely different orientation, the matching will be done correctly. To avoid wrong matching when cameras are flipped, a previous step to find a rough estimation of the transform may be needed.
 
-\subsection{Plane registration}
+\section{Transform Estimation}
 
 I extract with the plane detector, normal vector and distance to origin for every plane detected in the point clouds. The registration part consists in finding the transformation that best move vectors from one camera match the second one. \newline
 As presented in \cite{Khoshelham2016}, this problem can be solved by minimizing the distances between planes after applying the transform. \newline
@@ -40,7 +42,7 @@ And let $H$ be the transform between point clouds A and B such that:
 \[p^B = Hp^A\]
 We can define $H'$ the transform that brings any plane equation in A $\pi^A$ to its corresponding plane in point cloud B $\pi^{B}$. We can demonstrate that: \[H'=H^-T\]
 Finding $H$ is then the same as finding $H'$ that minimize plane distances: \[\pi^B_i=H'\pi^A_i\]
-If we write: 
+If we write:
 \[H'=\begin{bmatrix}
 R & t\\ 
 0 & 1
@@ -65,3 +67,5 @@ The final solution is:
 \end{matrix}\right.\]
 
 At the end we can then ensure the orthogonality of $R$ using SVD decomposition.
+
+\section{Program Structure}
