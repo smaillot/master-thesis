@@ -1,26 +1,30 @@
 \lhead{\emph{Preface}}
 
 % ***************************************************************************
-\chapter{Preface}
+\chapter*{Preface}
+\addcontentsline{toc}{chapter}{Preface} 
 % ***************************************************************************
 
 
 % ***************************************************************************
-\section{Origin of the project}
+\section*{Origin of the project}
+\addcontentsline{toc}{section}{Origin of the project} 
 % ***************************************************************************
 
-Althought robots have been used for decades in the industry, one of the current challenge for robotics is to adapt robots for domestic environment to help people in their everyday life. With this in mind, this project -- insert project details -- aims to teach robots how to interact with humans in a kitchen environment in order. This project particularly applies to disabled people who may need assistance for achieving daily tasks.   
+Although robots have been used for decades in the industry, one of the current challenge for robotics is to adapt robots for domestic environment to help people in their everyday life. With this in mind, this project aims to teach robots how to interact with humans in a kitchen environment in order to help them achieving common actions in a collaborative way. This project particularly applies to disabled people who may need assistance for achieving daily tasks.   
 
 % ***************************************************************************
-\section{Motivation}
+\section*{Motivation}
+\addcontentsline{toc}{section}{Motivation} 
 % ***************************************************************************
 
 To achieve this goal we need to build a detailed and updated 3D map of the scene in order for the robots to understand their environment, choose a desired action and plan a trajectory to actually perform this task. This project is kinect V2 to acquire 3D data from the scene. Kinect sensors have a good accuracy at close range and then, even when it is feasible, it will not be the best idea to put the sensor far away from the workspace in order to acquire data from the whole environment with only one sensor. \\
 Thus, it is preferable to reconstruct the scene from partial views of the environment. It is then needed to merge different views into one single complete representation of the workspace. The main motivation of this work is then to be able to reconstruct the complete 3D map in order for the robots to be able to understand their environment.
 
 % ***************************************************************************
-\section{Requirements}
+\section*{Requirements}
+\addcontentsline{toc}{section}{Requirements} 
 % ***************************************************************************
 
 This work mainly require depth sensors, we are using Kinect V2. These sensors provide an high frequency stream of RGB and depth data which are converted into 3D Point Clouds. The computer needed to process this amount of data have to be powerful if we want to process it with high frequency. \\
-For the implementation, this work is entirely made using free opensource software. It is running on Linux using ROS and opensource libraries.
+For the implementation, this work is entirely made using free open source software. It is running on Linux using ROS and open source libraries.

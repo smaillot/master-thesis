@@ -50,5 +50,39 @@ An other interesting method that can be found in some papers is based on plane d
 However, to determine the whole 6 degrees of freedom of the transformation between camera positions, we would need 3 non-degenerate planes (ie. which normals describe a basis, the more orthogonal the better) to match in both point clouds. This condition is often too constraining to be satisfied, or is satisfied only if considering small and/or almost degenerate sets of planes. In this case, the accuracy gain provided by the plane identification is lost and one degree of freedom is left with a lot of uncertainty. Nevertheless, in most cases we can at least fix quite accurately the rotation between clouds (2 planes needed). \\
 To apply this technique, I have used PCL's RANSAC implementation in order to achieve plane detection. Similarly to the previous registration method, the next step consists in matching extracted planes. \\
 My first try was to match using feature matching in the same way as I did with keypoints descriptors but using global descriptors (descriptors that contains information on the entire plane). However, due to the similarity of planes in this particular scene (here, every planes is detected as an almost entirely white rectangle which fails the matching algorithm most of the time). Another technique could be to simply use brute force, since we are usually not trying to detect a lot of planes (we need 3 of them), by trying every possible matching we could make sure to keep the one that ends with the best registration result. Nevertheless this technique should better be applied to improve the matching after the whole registration process is implemented and optimized to reduce the computation speed, otherwise, repeating the process for every 6 matching possibilities may be too demanding. \\
-For this reason I preferred to match planes by normal similarity, this technique doesn't on the later use of plane matches and is simple to implement. The only requirement is not to have a huge orientation difference between cameras. We may want to eliminate this assumption later but, for testing and comparison purpose, this method should be sufficient because it is highly reliable under this assumption and requires few computations. \\
+For this reason I preferred to match planes by normal similarity, this technique doesn't rely on the later use of plane matches and is simple to implement. The only requirement is not to have a huge orientation difference between cameras. We may want to eliminate this assumption later but, for testing and comparison purpose, this method should be sufficient because it is highly reliable under this assumption and requires few computations. \\
+The last step is to estimate the rigid transform that minimize plane-to-plane matching error as suggested in \cite{khoshelham2016}. 
+\newline
+If we define a plane as the vector $\pi=(n^T, -\rho)$ (normal vector and distance to origin) that satisfy for every point $p$ of this plane the equation:
+\[\pi p=0\]
+And let $H$ be the transform between point clouds A and B such that:
+\[p^B = Hp^A\]
+We can define $H'$ the transform that brings any plane equation in A $\pi^A$ to its corresponding plane in point cloud B $\pi^{B}$. We can demonstrate that: \[H'=H^-T\]
+Finding $H$ is then the same as finding $H'$ that minimize plane distances: \[\pi^B_i=H'\pi^A_i\]
+If we write:
+\[H'=\begin{bmatrix}
+R & t\\ 
+0 & 1
+\end{bmatrix}\]
+We then have for each matching planes:
+\[\left\{\begin{matrix}
+{n_i^B}^TR={n_i^A}^T\\ 
+{n_i^B}^Tt=\rho_i^B-\rho_i^A
+\end{matrix}\right.\]
+By stacking all $n$ vectors into a matrix $N$ and all $\rho_i^B-\rho_i^A$ into a vector $d$, the problem became:
+\[\left\{\begin{matrix}
+N^BR=N^A\\ 
+N^Bt=d
+\end{matrix}\right.\]
+We can then simply compute the least square solutions for any n-dimensional distance metric where n is the number of matches. Especially, a useful metric could be for any n-d weight matrix $W$:
+\[\mathcal{D}(x,y)=a^TWb\]
+This metric will allow to weight some planes differently according to the confidence we give to the precision of their plane detection, otherwise $W=I_n$ will be used.
+The final solution is:
+\[\left\{\begin{matrix}
+\tilde{t}=({N^B}^TWN^B)^{-1}{N^B}^TWd\\ 
+\tilde{R}=({N^B}^TWN^B)^{-1}{N^B}^TWN^A
+\end{matrix}\right.\]
+
+At the end we can then ensure the orthogonality of $R$ using SVD decomposition. \\
+
 The main limitation of this technique is that the scene needs to have large planes in it, but it is really common in indoor environments. However, having 3 large matching planes is lot more difficult, this is again an indirect consequence of the lack of overlapping. To identify 3 planes means that the sensor is seeing a corner but it is not probable being able to see this corner in both views if the overlapping is small, moreover even if we do, the corner will be in the border of both view, meaning at least one plane will be small. To summarize, we can't expect to detect required planes by luck. We may be able to use this algorithm in some specific cases but it is not possible to plan to use it if we don't have knowledge of the scene.

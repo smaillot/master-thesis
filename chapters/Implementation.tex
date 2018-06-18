@@ -34,38 +34,6 @@ A simpler but still efficient way I implemented this matching was using planes n
 
 \section{Transform Estimation}
 
-I extract with the plane detector, normal vector and distance to origin for every plane detected in the point clouds. The registration part consists in finding the transformation that best move vectors from one camera match the second one. \newline
-As presented in \cite{Khoshelham2016}, this problem can be solved by minimizing the distances between planes after applying the transform. \newline
-If we define a plane as the vector $\pi=(n^T, -\rho)$ (normal vector and distance to origin) that satisfy for every point $p$ of this plane the equation:
-\[\pi p=0\]
-And let $H$ be the transform between point clouds A and B such that:
-\[p^B = Hp^A\]
-We can define $H'$ the transform that brings any plane equation in A $\pi^A$ to its corresponding plane in point cloud B $\pi^{B}$. We can demonstrate that: \[H'=H^-T\]
-Finding $H$ is then the same as finding $H'$ that minimize plane distances: \[\pi^B_i=H'\pi^A_i\]
-If we write:
-\[H'=\begin{bmatrix}
-R & t\\ 
-0 & 1
-\end{bmatrix}\]
-We then have for each matching planes:
-\[\left\{\begin{matrix}
-{n_i^B}^TR={n_i^A}^T\\ 
-{n_i^B}^Tt=\rho_i^B-\rho_i^A
-\end{matrix}\right.\]
-By stacking all $n$ vectors into a matrix $N$ and all $\rho_i^B-\rho_i^A$ into a vector $d$, the problem became:
-\[\left\{\begin{matrix}
-N^BR=N^A\\ 
-N^Bt=d
-\end{matrix}\right.\]
-We can then simply compute the least square solutions for any n-dimensional distance metric where n is the number of matches. Especially, a useful metric could be for any n-d weight matrix $W$:
-\[\mathcal{D}(x,y)=a^TWb\]
-This metric will allow to weight some planes differently according to the confidence we give to the precision of their plane detection, otherwise $W=I_n$ will be used.
-The final solution is:
-\[\left\{\begin{matrix}
-\tilde{t}=({N^B}^TWN^B)^{-1}{N^B}^TWd\\ 
-\tilde{R}=({N^B}^TWN^B)^{-1}{N^B}^TWN^A
-\end{matrix}\right.\]
-
-At the end we can then ensure the orthogonality of $R$ using SVD decomposition.
+My implementation of transform estimation using both matched points and planes is based on equations derived in \cite{ytaguchi2013}.
 
 \section{Program Structure}
