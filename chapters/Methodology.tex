@@ -4,6 +4,11 @@
 \chapter{Methodology}
 % ***************************************************************************
 
-as a human -> manual registration is hard
-we would intuitively rely on trustful features as planes
-
+All the above mentioned techniques appear to be efficient only under specific constrains. In our scenario none of them can be applied and we have to find a more suitable procedure for this project. \\
+Even for humans, manually calibrating these point clouds is a hard task if we ficus on trying to fit one shape into the other. Due to the lack of overlapping, it is difficult to notice whether a transform is wrong or not when focusing on closest points matching (which is similar to ICP algorithm). However, knowing that this is a scene containing large planes that can be scene in both views, we naturally tend to estimate the correctness of the registration by judging if the final result is coherent or not, if the planes are aligned or not (this is similar to plane matching). \\
+Both this methods are used by our brain in the same time to rate the coherence of the matching. In the same way, our program have to mix both techniques to get the best result. \\
+\newline
+As we have seen, the most reliable information we have is given by planes that are visible from both cameras. The first step would then be to identify as many planes as possible. Depending on how many planes we can match, the remaining degrees of freedom to fix decrease. \\
+In this scene two mains plane can be identities, which means only one translation degree of freedom remains to be solved. Thus, only one point is needed, in theory, to solve the registration completely. The problem is that the point cloud quality doesn't let us find perfect matches. I will then try to identify as many matches as possible so that, on average, the error is lowered. \\
+\newline
+As explained previously, both registration using points matching or planes matching works in a similar way. It is still needed to adapt these equations to be able to find the transformation that minimize both points and planes distance in the same time. 
