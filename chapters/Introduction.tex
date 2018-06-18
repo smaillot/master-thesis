@@ -8,9 +8,34 @@
 \section{Objectives}
 % ***************************************************************************
 
+The aim of this work is, given 2 point clouds from different kinect sensors, to merge them into a new point cloud containing all the information needed to build the 3D map of the workspace. For achieving this goal we already have some well know techniques to calibrate the sensors. \\
+Until know, this project was using a registration process involving marker recognition. However, it appears that this process has some disadvantages. First, it requires to have a special printed pattern that can be recognized by a program that use it to estimate camera positions. Another problem is that the process is needed to be run each time the sensors are moved. Intentional movements of the cameras (when changing the workspace setup) may not be frequent but unexpected small rotations of the kinects are much more of a problem, for example a camera rotation of 1° will produce almost 2cm of error on a point at a distance of 2m from the camera. Along time this will lead to big errors in scene reconstruction and the robots may not be provided a 3D map accurate enough to behave as expected. \\
+The purpose of this work is then to find a calibration method that fit better our requirements. In this section I will detail some of the main requirements of this work that I need to focus on to make sure that the end result will be useful for the other subsystems.
 
+\subsection{Spatial accuracy}
+
+In the first place, we need the result of this reconstruction process to be accurate. This means that the distance between any point provided in the point cloud and its real position in the real scene is small. In this project, the output point cloud will be used to build a voxelmap. This representation is using small cubes with fixed size to represent the scene. In the ideal case, the output point cloud contains points which position has a smaller error than this voxel size. In this case the map would represent accurately the position of each significant obstacle in the workspace. The common voxel size we use in this project is 2cm but it may vary depending on the task. \\
+To summarize we expect the end result point cloud to describe the scene with spatial errors not bigger than few centimeters. 
+
+\subsection{Processing speed}
+
+The current process using marker board is now needing few minutes to provide accurate results. We want the new algorithm to run, in the worst case within the same amount of time which will allow us to use it as a calibration program. However, if this program is running faster, it could be called during the reconstruction process to recalibrate more frequently to make sure that no unexpected movement of the cameras has occurred. If fast enough, it could even be run in real time to estimate camera position in each frame which would be useful for tracking a camera installed on a moving robot for example.
+
+\subsection{Simplicity}
+
+The main aspect of this new technique is that we want a registration process that doesn't involve any complicated process such as printing a template and moving it into the workspace for few minutes. This process should not require to involve the user in the process.
 
 % ***************************************************************************
 \section{Scope}
 % ***************************************************************************
 
+This work is applied in a really particular project but the resulting technique could be applied in other cases. My will mainly rely on the fact the scene is an indoor environment (kinect sensors can't be use outdoor anyway) which gives us some clues about the geometry of the scene. Indoor environments are most likely to contains several big planes (walls, table or any flat furniture...). These planes provides reliable knowledge on camera orientation and assuming to be indoor will mainly allow me to be confident that we are able to detect planes in the input point clouds. \\
+Also, I assume in this work that both camera intrinsic calibration is already solved, which means that, apart from calibration error, both clouds have similar scales (distances are the same within both point clouds) and non deformed (angles are the same in both point clouds). 
+
+% ***************************************************************************
+\section{Challenges}
+% ***************************************************************************
+
+In this particular project, we have to deal with unusual difficulties. Indeed, unlike the papers focusing on point cloud registration theory, we work with really noisy data from depth sensors instead of clean point clouds extracted from 3D models of laser scans. Some papers add noise to their point clouds to test noise robustness of their algorithm, however we have to deal with other limitation from the kinects. Even after careful intrinsic calibration, it remains image deformation, specially in the corners of the camera sensor. Differences in IR light reflection depending on the materials also deteriorate the quality of the point cloud by deforming or loosing some parts of the cloud. In addition we are not able to get a large overlapping region between the 2 point clouds for two reasons. The first is that, we want to cover a large scene and placing the kinects too close would reduce significantly the range of our system. The second reason is that kinects are active sensors that interfere within each other, in other words, if an other sensor is watching the same region, it will lead to a nosier point cloud. \\
+All of these limitations can be solved separately, but dealing with all of them in the same registration process will surely require to adapt some of the existing algorithms found in the literature. \\
+In this work, I will first present some of the most used techniques in 3D point cloud registration defining their field of application as well as their assets and drawbacks. I will then describe how we can overcome the previously mentioned difficulties by combining some of these state of the art techniques. The next chapter will be details about the actual implementation of this solution and the final one will discuss the results and compare with other algorithms.
