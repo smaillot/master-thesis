@@ -13,6 +13,7 @@
 
 \usepackage{graphicx}
 \graphicspath{ {images/} }
+% \usepackage[backend=bibtex,style=verbose-trad2]{biblatex}
 
 \usepackage[acronym]{glossaries}
 \makeglossaries
@@ -36,20 +37,16 @@
 \lhead{}          % Clears the left side page header
 \pagestyle{fancy}  % Finally, use the "fancy" page style 
 
-
-% #############################################################################
-%                               Acknowledgement
-% #############################################################################
-%\clearpage  
-%\input{docs/acknowledgement} 
+\bibliographystyle{plain}
+\bibliography{references}
+\addcontentsline{toc}{chapter}{Bibliography}
 
 
 % #############################################################################
 %                               The Abstract Page
 % #############################################################################
-%\clearpage 
-%\input{Parts/abstract} 
-
+\clearpage 
+\input{chapters/abstract} 
 
 
 % #############################################################################
@@ -81,8 +78,5 @@
 \listoftables
 \printglossary
 
-\bibliographystyle{plain}
-\bibliography{references}
-\addcontentsline{toc}{chapter}{Bibliography}
 
 \end{document}
