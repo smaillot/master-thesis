@@ -9,10 +9,20 @@
 \section{Marker detection}
 % ***************************************************************************
 
-The registration technique currently used in this project is the detection of \acrshort{ar} marker in the color image. This detection is not very accurate but by repeating the process hundreds of time and averaging we can get a good estimation of the position of the cameras. An obvious drawback regarding our needs for this project is the involvement of the user and the equipment requirement. The user need to place a printed pattern into the overlapping region and no other work can be done while performing the registration. \\
-Moreover, as we have already discussed, the overlapping region cannot be trusted due to its poor quality and size. This can be solved by calibrating both cameras with a different marker position, these positions have now to be know if we want to match point clouds. This is an high constraint both for the user and the workspace. This is the reason we are searching for a more automatic registration process for this project. \\
-To register using markers we are using an existing ROS package based on alvar, which track AR printed patterns in a color image to estimate its position with respect to this camera. By filming a marker which position in the scene is known with a fix camera, we can average the pose estimation on hundreds of frames to get a good estimation of the actual position of the camera. \\
+The registration technique currently used in this project is the detection of \acrshort{ar} marker in the color image. AR markers are black and white, grid-like patterns developped for augmented reality usage to detect easily a position in space from an RGB camera. \\
+This detection is not very accurate but by repeating the process hundreds of time and averaging we can get a good estimation of the position of the cameras. An obvious drawback regarding our needs for this project is the involvement of the user and the equipment requirement. The user need to place a printed pattern into the overlapping region and no other work can be done while performing the registration. \\
+To perform this registration we place the marker in the overlapping region so that both camera can be calibrated from this marker (fig. \ref{fig:ar_marker}). As we have already discussed, the overlapping region cannot be trusted due to its poor quality and small size. This can be solved by calibrating both cameras with a different marker position (in the middle of the camera view), these positions have now to be know if we want to match point clouds together. This is a high constraint both for the user to perform the calibration twice and the workspace to be designed such that we can easily move the marker in it while still knowing exactly the position of the marker. This is the reason we are searching for a more automatic registration process for this project. \\
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{images/marker_detection.png}
+    \caption{AR Marker detection.}
+    \label{fig:ar_marker}
+\end{figure}
+
+For the implementation, we are using an existing ROS package based on alvar, which tracks AR printed patterns in a color image to estimate its position with respect to this camera. By filming a marker which position in the scene is known with a fix camera, we can average the pose estimation on hundreds of frames to get a good estimation of the actual position of the camera. \\
 The main drawbacks of this technique are the need of printed pattern, human action, time of computation and knowledge of the scene. This is still a good technique to establish our ground truth and to build the entire scene point cloud we could need for other methods as ICP. 
+
 
 % ***************************************************************************
 \section{\acrlong{icp}}
