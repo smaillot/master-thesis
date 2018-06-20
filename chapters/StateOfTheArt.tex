@@ -13,9 +13,19 @@ The registration technique currently used in this project is the detection of \a
 This detection is not very accurate but by repeating the process hundreds of time and averaging we can get a good estimation of the position of the cameras. An obvious drawback regarding our needs for this project is the involvement of the user and the equipment requirement. The user need to place a printed pattern into the overlapping region and no other work can be done while performing the registration. \\
 To perform this registration we place the marker in the overlapping region so that both camera can be calibrated from this marker (fig. \ref{fig:ar_marker}). As we have already discussed, the overlapping region cannot be trusted due to its poor quality and small size. This can be solved by calibrating both cameras with a different marker position (in the middle of the camera view), these positions have now to be know if we want to match point clouds together. This is a high constraint both for the user to perform the calibration twice and the workspace to be designed such that we can easily move the marker in it while still knowing exactly the position of the marker. This is the reason we are searching for a more automatic registration process for this project. \\
 
-\begin{figure}[h!]
+\begin{figure}
     \centering
-    \includegraphics[width=\textwidth]{images/marker_detection.png}
+    \begin{subfigure}[b]{0.4}
+        \includegraphics[width=\textwidth]{marker_detection.png}
+        \caption{AR Marker detection.}
+        \label{fig:marker_model}
+    \end{subfigure}
+\hfill
+    \begin{subfigure}[b]{0.4}
+        \includegraphics[width=\textwidth]{marker_detection.png}
+        \caption{AR Marker detection.}
+        \label{fig:marker_detection}
+    \end{subfigure}
     \caption{AR Marker detection.}
     \label{fig:ar_marker}
 \end{figure}
