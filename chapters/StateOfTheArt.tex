@@ -78,12 +78,31 @@ There are a lot of different ways to perform registration using 3D points matchi
 
 \subsection{Features extraction}
 
-    There are a lot of different features we can extract from keypoints but it basically consists in stacking 3D shape and/or color histograms into a vector descriptor, if this descriptor is local, it can then be used to match the most similar keypoints to identify similar points (ie. that represent the same real point in space) from both clouds. This matching process means that this method is also relying only on overlapping regions to perform registration. \\
-    For each keypoint, we want to be able to find the most similar keypoint in the second cloud, so it is needed to describe the point surrounding in a way that is invariant to rotation (its equivalent point in the other cloud is probably oriented differently unless both clouds are yet aligned) and translation (scale invariant is not a property we are interested here since we assume cameras are calibrated). This description is usually based on geometric features (relative position or density of its neighbors) and/or color features (color distribution around the point).
+    There are a lot of different features we can extract from keypoints but it generally consists in stacking 3D shape and/or color histograms into a vector descriptor, if this descriptor is local, it can then be used to match the most similar keypoints to identify similar points (ie. that represent the same real point in space) from both clouds. This matching process means that this method is also relying only on overlapping regions to perform registration. \\
+    For each keypoint, we want to be able to find the most similar keypoint in the second cloud, so it is needed to describe the point surrounding in a way that is invariant to rotation (its equivalent point in the other cloud is probably oriented differently unless both clouds are yet aligned) and translation (scale invariant is not a property we are interested here since we assume cameras are calibrated). This description is usually based on geometric features (relative position or density of its neighbors) and/or color features (color distribution around the point). \\
+    Due to the poor quality of the point cloud, especially in the region where we are searching for keypoints matching, I chose to use the \acrshort{cshot} estimator that is extracting features from color information as well as 3D shape as explained in \cite{tombari2011}.
     
 \subsection{Matching}
 
-    These descriptors can now be metched by finding a coherent measure of distance within the chosen descriptor space so that a small distance between descriptors means that the corresponding points are similar.
+    These descriptors can now be matched by finding most similar points by comparing their features. For each point of the source point cloud we have to measure the distance with every points in the target cloud to find the closest. \\
+    This process can then be really slow, to fasten this search, it is common to use KD-Trees. Given one set of features computed for every points in one of our clouds, we are building a tree such that each node divide the tree in 2 sub-trees in which every points' coordinate (in the feature space) is whether bigger or smaller than the median value for one particular axis. This process is repeated successively for every axis until every point is represented by a singular node or leaf. This algorithm can be written recursively in this way:
+    
+    \begin{algorithm}
+        \caption{KD-Tree}\label{alg:kdtree}
+        \REQUIRE $L$ is a list of feature vectors of size $k$
+        \begin{algorithmic}[1]
+            \Function{kdtree}{$L, depth$}
+                \State $axis \longleftarrow depth \mod{k}$
+                \State $m \longleftarrow $ median of $L$ in axis direction
+                \State create $node$
+                \State $node.location \longleftarrow m$
+                \State $node.leftchild \longleftarrow KDTREE({l \in L \:\vert\; l_{axis} < m}, depth + 1)$
+                \State $node.rightchild \longleftarrow KDTREE({l \in L \:\vert\; l_{axis} \geq m}, depth + 1)$
+                \State \Return $node$
+            \EndFunction
+        \end{algorithmic}
+    \end{algorithm}
+    
     
 \subsection{Outliers Rejection} 
 
