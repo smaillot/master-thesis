@@ -96,8 +96,8 @@ There are a lot of different ways to perform registration using 3D points matchi
                 \State $m \longleftarrow $ median of $L$ in axis direction
                 \State create $node$
                 \State $node.location \longleftarrow m$
-                \State $node.leftchild \longleftarrow KDTREE({l \in L \:\vert\; l_{axis} < m}, depth + 1)$
-                \State $node.rightchild \longleftarrow KDTREE({l \in L \:\vert\; l_{axis} \geq m}, depth + 1)$
+                \State $node.leftchild \longleftarrow KDTREE({l \in L \:\vert\; l_{axis} < m}, \:depth + 1)$
+                \State $node.rightchild \longleftarrow KDTREE({l \in L \:\vert\; l_{axis} \geq m}, \:depth + 1)$
                 \State \Return $node$
             \EndFunction
         \end{algorithmic}
@@ -110,12 +110,28 @@ There are a lot of different ways to perform registration using 3D points matchi
     
 \subsection{Transform Estimation} 
     
-    The last step is then to estimate the transform that brings source matched points to their corresponding target points.
-
-
-To apply this pipeline, I used the PCL implementation of these algorithms. I am using SHOT features which contains information on both geometry of the surrounding of the keypoint and color distribution. 
-... \\
-The resulting quality of this technique depends on matches accuracy (and successful matching ratio) but also on their spreading since the same error will produce a lower registration angle error if the keypoints matched are more distant. This, this algorithm will only be useful when a large part of the clouds is overlapping, in our case this method can't be applied.
+    The last step is then to estimate the transform that brings source matched points to their corresponding target points. Let $p_i^s, \:p_i^t$ be the $i^{th}$ matching pair of points (whose coordinates are expressed with respect to their centroids $p'^s$ and $p'^t$) from source and target point clouds. Stacking $N$ matching points into $3\times N$ matrices $P^s = \left ( p_0^s,\:p_1^s, \cdots  \right )$ and $P^t$, we can write $\mathcal{T}$ as the solution of $\mathcal{T}P^s = P^t$. As no exact solution can be founds with real data, we want to find the transform $\mathcal{T}$ minimizing the quadratic error $\sum_i\left | p_i^t - \mathcal{T}p_i^s \right |^2$. \\
+    We can find separately the rotation and translation parts of the transform $R$, $t$ such that 
+    $\mathcal{T}=\begin{pmatrix}
+    R & t\\ 
+    0 & 1
+    \end{pmatrix}$.
+    The least-square solution can be derived as detailed in \cite{sork2017}, for the rotation part is given by: 
+    \[
+    R=U\begin{pmatrix}
+    1 &  & \\ 
+     & 1 & \\ 
+     &  & det(UV^T))
+    \end{pmatrix}V^T
+    \]
+    Where $U$ and $V$ are computed from the \acrshort{svd} decomposition of the $3\times 3$ correlation matrix $K$:
+    \[
+    K=UDV^T=\sum_i p_i^t{p_i^s}^T
+    \]
+    Then $t$ can simply be computed as the vector: 
+    \[
+        t=p'\,^t-Rp'\,^s
+    \]
 
 % ***************************************************************************
 \section{Plane detection}
