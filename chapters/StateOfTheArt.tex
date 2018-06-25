@@ -78,10 +78,24 @@ There are a lot of different ways to perform registration using 3D points matchi
     
     \begin{figure}[h!]
         \centering
-        \includegraphics[width=\textwidth]{images/iss_keypoints.png}
-        \caption{\acrshort{iss} keypoints extracted on the scene.}
+        \includegraphics[width=\textwidth]{images/iss_50.png}
+        \caption{\acrshort{iss} keypoints extracted from both cameras.}
         \label{fig:iss_kp}
     \end{figure}
+    
+    \begin{figure}[h!]
+        \centering
+        \includegraphics[width=\textwidth]{images/sift_30.png}
+        \caption{\acrshort{sift} keypoints extracted from both cameras.}
+        \label{fig:sift_kp}
+    \end{figure}
+    
+    \begin{figure}[h!]
+        \centering
+        \includegraphics[width=\textwidth]{images/unif_100.png}
+        \caption{Uniform sampling of both cameras.}
+        \label{fig:sift_kp}
+    \end{figure}    
 
 \subsection{Features extraction}
 
@@ -110,6 +124,12 @@ There are a lot of different ways to perform registration using 3D points matchi
         \end{algorithmic}
     \end{algorithm}
     
+    \begin{figure}[h!]
+        \centering
+        \includegraphics[width=\textwidth]{images/kp_matches.png}
+        \caption{\acrshort{iss} keypoints matched between both cameras (same color = match).}
+        \label{fig:iss_match}
+    \end{figure}
     
 \subsection{Outliers Rejection} 
 
