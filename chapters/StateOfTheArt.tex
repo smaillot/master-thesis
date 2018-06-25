@@ -169,14 +169,22 @@ However, to determine the whole 6 degrees of freedom of the transformation betwe
 To apply this technique, I have used PCL's RANSAC implementation in order to achieve plane detection (fig. \ref{fig:planes}). Similarly to the previous registration method, the next step consists in matching extracted planes. \\
 
 \begin{figure}[h!]
-        \centering
-        \includegraphics[width=\textwidth]{images/planes.png}
-        \caption{Plane extraction on one camera, $n=4$.}
-        \label{fig:planes}
-    \end{figure}
+    \centering
+    \includegraphics[width=\textwidth]{images/planes.png}
+    \caption{Plane extraction on one camera, $n=4$.}
+    \label{fig:planes}
+\end{figure}
     
 My first try was to match using feature matching in the same way as I did with keypoints descriptors but using global descriptors (descriptors that contains information on the entire plane). However, due to the similarity of planes in this particular scene (here, every planes is detected as an almost entirely white rectangle which fails the matching algorithm most of the time). Another technique could be to simply use brute force, since we are usually not trying to detect a lot of planes (we need 3 of them), by trying every possible matching we could make sure to keep the one that ends with the best registration result. Nevertheless this technique should better be applied to improve the matching after the whole registration process is implemented and optimized to reduce the computation speed, otherwise, repeating the process for every 6 matching possibilities may be too demanding. \\
 For this reason I preferred to match planes by normal similarity, this technique doesn't rely on the later use of plane matches and is simple to implement. The only requirement is not to have a huge orientation difference between cameras. We may want to eliminate this assumption later but, for testing and comparison purpose, this method should be sufficient because it is highly reliable under this assumption and requires few computations. \\
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{images/planes_scene.png}
+    \caption{End result of plane matching with both cameras, $n=4$.}
+    \label{fig:planes_scene}
+\end{figure}
+
 The last step is to estimate the rigid transform that minimize plane-to-plane matching error as suggested in \cite{khoshelham2016}. 
 \newline
 If we define a plane as the vector $\pi=(n^T, -\rho)$ (normal vector and distance to origin) that satisfy for every point $p$ of this plane the equation:
