@@ -75,6 +75,13 @@ There are a lot of different ways to perform registration using 3D points matchi
 \subsection{Keypoints extraction}
 
     Input point clouds contains way too much points to run the entire process on all of them. It is thus required to select only a subset of them, we call these selected points, keypoints. As explained in \cite{pcl_feat}, we can use several different keypoints extraction techniques such as \acrshort{iss}, \acrshort{narf} or uniform sampling. \\
+    
+    \begin{figure}[h!]
+        \centering
+        \includegraphics[width=\textwidth]{images/iss_}
+        \caption{ICP applied to one camera and a 3D model of the kitchen.}
+        \label{fig:icp_model}
+    \end{figure}
 
 \subsection{Features extraction}
 
