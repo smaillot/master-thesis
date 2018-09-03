@@ -18,13 +18,13 @@ Although robots have been used for decades in the industry, one of the current c
 \addcontentsline{toc}{section}{Motivation} 
 % ***************************************************************************
 
-To achieve this goal we need to build a detailed and updated 3D map of the scene in order for the robots to understand their environment, choose a desired action and plan a trajectory to actually perform this task. This project is kinect V2 to acquire 3D data from the scene. Kinect sensors have a good accuracy at close range and then, even when it is feasible, it will not be the best idea to put the sensor far away from the workspace in order to acquire data from the whole environment with only one sensor. \\
-Thus, it is preferable to reconstruct the scene from partial views of the environment. It is then needed to merge different views into one single complete representation of the workspace. The main motivation of this work is then to be able to reconstruct the complete 3D map in order for the robots to be able to understand their environment.
+To achieve this goal we need to acquire a detailed representation of the scene before being able to act on the environment with robots. Using computer vision to build a detailed and real-time 3D map of the scene in real time is then a necessary step to achieve in order for the robots to understand their environment before choosing a desired action and planning a trajectory to actually perform this task. This project use the kinect V2 depth sensor to acquire 3D data from the scene. Kinect sensors have a better accuracy at close range and then, even when it is feasible, it will not be the best idea to put the sensor far away from the workspace in order to acquire data from the whole environment with only one sensor. \\
+Thus, it is preferable to reconstruct the scene from partial views of the environment to gain accuracy when the scene is too large to use only one close range camera. It is then needed to merge different views into one single complete representation of the workspace. The main motivation of this work is then to be able to reconstruct the complete 3D map in order for the robots to be able to understand their environment.
 
 % ***************************************************************************
 \section*{Requirements}
-\addcontentsline{toc}{section}{Requirements} 
+\addcontentsline{toc}{section}{Requirements}
 % ***************************************************************************
 
-This work mainly require depth sensors, we are using Kinect V2. These sensors provide an high frequency stream of RGB and depth data which are converted into 3D Point Clouds. The computer needed to process this amount of data have to be powerful if we want to process it with high frequency. \\
-For the implementation, this work is entirely made using free open source software. It is running on Linux using ROS and open source libraries.
+This work mainly require depth sensors, we are using Kinect V2. These sensors provide an high frequency (default: 30 \acrshort{fps}) stream of \acrshort{rgb} and depth data which are converted into 3D colored Point Clouds. The computer needed to process this amount of data have to be powerful if we want to process it with high frequency. In this project we use a Titan X \acrshort{gpu} and i7 cores to process the data.\\
+For the implementation, this work is entirely made using free \gls{open source} software. It is running on Linux \acrshort{os} using \acrshort{ros} \gls{middleware} and \gls{open source} \gls{libraries} (\acrshort{pcl}, openCV and other \acrshort{ros} libraries).

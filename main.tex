@@ -1,13 +1,13 @@
 \documentclass[a4paper, 12pt, oneside]{Project}
 \usepackage[utf8]{inputenc}
 
-\title       {Automatic registration of multiple kinect sensors \\in indoor environment}
-\UNIVERSITY  {UNIVERSITAT POLITÈCNICA DE CATALUNYA}
-\supervisor  {Joan Aranda}
+\title       {Point Cloud Data Fusion \\for Real-Time Applications}
+\UNIVERSITY  {}
+\supervisor  {Joan Aranda Lopez \\Manuel Vinagre Ruiz}
 \examiner    {}
 \degree      {Master's degree in \\Automatic Control and Robotics}
 \authors     {Stéphane Maillot}
-\department  {Department of Systems Engineering, Automation \\ and Industrial Informatics}
+\department  {Department of Systems Engineering, \\Automation and Industrial Computing}
 \faculty     {Barcelona School of Industrial Engineering}
 
 
@@ -26,8 +26,13 @@
 \input{glossary}
 \input{acronym}
 
+\usepackage{watermark}
+
+\setlength{\parindent}{1cm}
+
 \begin{document}
 
+\thiswatermark{\centering \put(-48, -600){\includegraphics[scale=2.3]{icons/etseib.png}} }
 \maketitle
 
 % #############################################################################
@@ -67,6 +72,8 @@
 
 \addcontentsline{acronym}{newacronym}{shot} 
 
+% transform cam1->cam2
+
 \input{chapters/Preface} 
 \input{chapters/Introduction} 
 \input{chapters/StateOfTheArt} 
@@ -82,7 +89,7 @@
 \listoftables
 \printglossary
 
-\bibliographystyle{plain}
+\bibliographystyle{alpha}
 \bibliography{references}
 \addcontentsline{toc}{chapter}{Bibliography}
 

@@ -1,7 +1,7 @@
 \lhead{\emph{State of the Art}}
 
 % ***************************************************************************
-\chapter{State of the Art}
+\chapter{State of the Art} \label{ch:soa}
 % ***************************************************************************
 
 
@@ -9,28 +9,35 @@
 \section{Marker detection}
 % ***************************************************************************
 
-The registration technique currently used in this project is the detection of \acrshort{ar} marker in the color image. AR markers are black and white, grid-like patterns developped for augmented reality usage to detect easily a position in space from an RGB camera. \\
-This detection is not very accurate but by repeating the process hundreds of time and averaging we can get a good estimation of the position of the cameras. An obvious drawback regarding our needs for this project is the involvement of the user and the equipment requirement. The user need to place a printed pattern into the overlapping region and no other work can be done while performing the registration. \\
-To perform this registration we place the marker in the overlapping region so that both camera can be calibrated from this marker (fig. \ref{fig:ar_marker}). As we have already discussed, the overlapping region cannot be trusted due to its poor quality and small size. This can be solved by calibrating both cameras with a different marker position (in the middle of the camera view), these positions have now to be know if we want to match point clouds together. This is a high constraint both for the user to perform the calibration twice and the workspace to be designed such that we can easily move the marker in it while still knowing exactly the position of the marker. This is the reason we are searching for a more automatic registration process for this project. \\
+The registration technique currently used in this project is the detection of \acrshort{ar} marker in the color image. AR markers are black and white grid-like patterns (fig. \ref{fig:ar_marker}) developed for augmented reality usage to detect easily a position in space from an \acrshort{rgb} camera. \\
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=\textwidth]{images/marker_detection.png}
-    \caption{AR Marker detection.}
+    \includegraphics[width=100px]{images/armarker.png}
+    \caption{AR Marker.}
     \label{fig:ar_marker}
 \end{figure}
 
-For the implementation, we are using an existing ROS package based on alvar, which tracks AR printed patterns in a color image to estimate its position with respect to this camera. By filming a marker which position in the scene is known with a fix camera, we can average the pose estimation on hundreds of frames to get a good estimation of the actual position of the camera. \\
-The main drawback of this technique are the need of printed pattern, human action, time of computation and knowledge of the scene. This is still a good technique to establish our ground truth and to build the entire scene point cloud we could need for other methods as ICP.
+This detection is not very accurate but by repeating the process hundreds of time and averaging we can get a good estimation of the position of the cameras. An obvious drawback regarding our needs for this project is the involvement of the user and the equipment requirement. The user need to place a printed pattern into the overlapping region and no other work can be done while performing the registration. \\
+To perform this registration we place the marker in the overlapping region so that both camera can be calibrated from this marker (fig. \ref{fig:ar_marker_kitchen}). As we have already discussed, the overlapping region cannot be trusted due to its poor quality and small size. This can be solved by calibrating both cameras with a different marker position (in the middle of each camera view), these positions have now to be know if we want to match point clouds together. This is a high constraint both for the user to perform the calibration twice and the workspace to be designed such that we can easily move the marker in it while still knowing precisely the position of the marker because any uncertainty on this measurement will be added to the registration error. This is the reason we are searching for a faster and more automatic registration process for this project. \\
 
+\begin{figure}[t!]
+    \centering
+    \includegraphics[width=\textwidth]{images/marker_detection.png}
+    \caption{AR Marker detection.}
+    \label{fig:ar_marker_kitchen}
+\end{figure}
+
+For the implementation, we are using an existing ROS package based on alvar, which tracks AR printed patterns in a color image to estimate its position with respect to this camera. By filming a marker which position in the scene is known with a fix camera, we can average the pose estimation on hundreds of frames to get a good estimation of the actual position of the camera. \\
+The main drawback of this technique are the need of printed pattern, human action, time of computation and knowledge of the scene. This is still a good technique to establish our ground truth and to build the entire scene point cloud we could need for other methods such as ICP.
 
 % ***************************************************************************
 \section{\acrlong{icp}}
 % ***************************************************************************
 
-The \acrlong{icp} algorithm is a well known registration algorithm that aims to register 2 point clouds that represent the same objects using an iterative process. These iterations rely on identifying closest points from both point clouds at each step in order to estimate a transformation that will improve the clouds matching without taking account of distant points (considered as outliers).\\
+The \acrfull{icp} algorithm is a well known registration algorithm that aims to register 2 point clouds that represent the same scene using an iterative process. These iterations rely on identifying closest points from both point clouds at each step in order to estimate a transformation that will improve the clouds matching without taking account of distant points (considered as outliers).\\
 
-The first step of this algorithm is to find matches between points from the source point cloud $\mathcal{P_S}$ to points in the target cloud $\mathcal{P_T}$. As we have no knowledge of which point within the target cloud should match with source points the key idea is to match source points with their closest neighbors in the target cloud (fig. \ref{fig:closest_point}). After filtering duplicate matches we have pairs of matching points with indices $m_S$ and $m_T$. At this step we define the objective function $f$ which is the \acrshort{mse} of these matches according to the current guess for the rigid transform $\mathcal{T}_{i}$. \\
+The first step of this algorithm is to find matches between points from the source point cloud $\mathcal{P_S}$ to points in the target cloud $\mathcal{P_T}$. As we have no knowledge of which point within the target cloud should match with source points, the key idea is to match source points with their closest neighbors in the target cloud (fig. \ref{fig:closest_point}). After filtering duplicate matches we have pairs of matching points with indices $m_S$ and $m_T$. At this step we define the objective function $f$ which is the \acrfull{mse} of these matches according to the current guess for the rigid transform $\mathcal{T}_{i}$. \\
 \[
     f(\mathcal{T}_i) = MSE(\mathcal{P}_T^{m_T} - \mathcal{T}_i\: \mathcal{P}_S^{m_S})
 \]
@@ -44,29 +51,44 @@ After that we can compute the transform that minimize $f$ for this set of matche
     \label{fig:closest_point}
 \end{figure}
 
-The main drawback of this technique come from the need of an initial guess, the \acrshort{icp} algorithm is used for refinement once we have a rough idea of the desired result. This is a problem in our case because we have no previous knowledge over the camera positions and orientation. It could be fixed by using accelerometers for example but the translation part would need a large overlapping region to be solved. This algorithm is indeed highly sensitive to the ratio of overlapping between point clouds. In our case, the low overlapping makes this techniques unusable, even if the registration converge to a coherent result (small translation error), the lack of overlapping, the noise and deformation would not allow to have an accurate estimation of the rotation between clouds which have dramatic effect on low-overlapping point clouds (2 sets of points with a similar centroids would be much less affected by rotation errors). \\
+The main drawback of this technique come from the need of an initial guess, the \acrshort{icp} algorithm is used for refinement once we have a rough idea of the desired result. Thus, this method is not appropriate when we have no knowledge on camera relative position and orientation. In our case for example, the first calibration is done without having any knowledge and will fail. However it could still help to fix small calibration error that occurs along time. However the low overlapping ratio of our point clouds makes this techniques unusable, especially because the overlapping region is mostly flat, noisy and deformed (fig \ref{fig:bad_overlap}). A method based on point matching in these regions can't obtain a good result in our setup and we most likely obtain a really bad registration as sketched on fig \ref{fig:bad_overlap_sketch}. We can see on this figure that the metric we use (closest points distance) is not appropriate to solve this problem since the expected result has a larger value than our result. \\
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{images/bad_overlap.png}
+    \caption{Overlapping region in both point clouds. We can observe that this region is really deformed which affects a lot the performance of this method. Camera relative position is set arbitrarily here for visualization purpose.}
+    \label{fig:bad_overlap}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{images/bad_overlap_scheme.png}
+    \caption{Impact of bad quality point cloud on the registration result. For example the table plane (yellow line) which suffers a big deformation in the overlapping region on both cameras, has shown in \ref{fig:bad_overlap}.}
+    \label{fig:bad_overlap_sketch}
+\end{figure}
+
 This algorithm also requires a huge amount of computation power if running directly on kinect point clouds which contains more than 16 million points. To run this algorithm faster we have, apart from decreasing the number of iteration and the convergence threshold, to downsample point clouds before running the algorithm. It may decrease the precision of the transform estimation but has no incidence on the final point cloud density since I can simply use the downsampled cloud to estimate the transform and then apply it to the full point cloud.\\
 \newline
-To perform registration using the ICP method, I am using the PCL implementation of this algorithm. As expected, applying this algorithm with our 2 low overlapping point clouds ends up to really bad results (fig. \ref{fig:icp_cams}), however this technique is more effective when registering a partial view of the scene with a complete model of it (fig. \ref{fig:icp_cams}). I was then able to apply ICP to both point clouds to register them to a more complete 3D model of the scene. This works both when applied to registration with a CAD model of the kitchen and to a complete point cloud generated by merging both kinect views but even with this model we don't have enough information to fix accurately the Y translation (green axis in fig. \ref{fig:ar_marker}). \\
+To perform registration using the ICP method, I am using the \acrshort{pcl} implementation of this algorithm. As expected, applying this algorithm with our 2 low overlapping point clouds ends up to really bad results (fig. \ref{fig:icp_cams}), however this technique is more effective when registering a partial view of the scene with a complete model of it (fig. \ref{fig:icp_cams}). I was then able to apply ICP to both point clouds to register them to a more complete 3D model of the scene. This works both when applied to registration with a CAD model of the kitchen and to a complete point cloud generated by merging both kinect views but even with this model we don't have enough information to fix accurately the Y translation (green axis in fig. \ref{fig:ar_marker}). \\
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\textwidth]{images/icp_one_one_registration.png}
-    \caption{ICP applied to both cameras.}
+    \caption{ICP applied to register one camera with the other.}
     \label{fig:icp_cams}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\textwidth]{images/icp_model.png}
-    \caption{ICP applied to one camera and a 3D model of the kitchen.}
+    \caption{ICP applied to one camera and a 3D model of the kitchen (without objects).}
     \label{fig:icp_model}
 \end{figure}
 
-This algorithm is then useful when point clouds have a large overlapping or if we have previously built a model of the scene. As we are not assuming any knowledge on the environment (else than being indoor) and due to the low overlapping of our point clouds, this technique will not be used for the first registration of kinects. This can still remains a good registration method as soon as we have created a complete and reliable model of the scene.
+This algorithm is then useful when point clouds have a large overlapping or if we have previously built a model of the scene. As we are not assuming any knowledge on the environment (else than being indoor) and due to the low overlapping of our point clouds, this technique will not be used for the first registration of kinects. This can still remains a good registration method as soon as we have created a complete and reliable model of the scene as shown in fig. \ref{fig:icp_model}. The scene model is provided by the simulated environment discussed in \ref{subsec:simulation}.
 
 % ***************************************************************************
-\section{3D Keypoints}
+\section{3D Keypoints} \label{sec:3dkp}
 % ***************************************************************************
 
 An other commonly used registration technique consists in 3D keypoints detection and matching. 
@@ -74,7 +96,7 @@ There are a lot of different ways to perform registration using 3D points matchi
 
 \subsection{Keypoints extraction}
 
-    Input point clouds contains way too much points to run the entire process on all of them. It is thus required to select only a subset of them, we call these selected points, keypoints. As explained in \cite{pcl_feat}, we can use several different keypoints extraction techniques such as \acrshort{iss}, \acrshort{narf} or uniform sampling. \\
+    Input point clouds contains way too much points to run the entire process on all of them. It is thus required to select only a subset of them, we call these selected points, keypoints. As explained in \cite{pcl_feat}, we can use several different keypoints extraction techniques such as \acrshort{iss}, \acrshort{narf}, \acrshort{sift} or uniform sampling. \\
     
     \begin{figure}[h!]
         \centering
@@ -96,17 +118,19 @@ There are a lot of different ways to perform registration using 3D points matchi
         \caption{Uniform sampling of both cameras.}
         \label{fig:unif_kp}
     \end{figure}    
+    
+    I obtained better results and fast computation using \acrshort{iss} and used only this one in later works.
 
 \subsection{Features extraction}
 
     There are a lot of different features we can extract from keypoints but it generally consists in stacking 3D shape and/or color histograms into a vector descriptor, if this descriptor is local, it can then be used to match the most similar keypoints to identify similar points (ie. that represent the same real point in space) from both clouds. This matching process means that this method is also relying only on overlapping regions to perform registration. \\
-    For each keypoint, we want to be able to find the most similar keypoint in the second cloud, so it is needed to describe the point surrounding in a way that is invariant to rotation (its equivalent point in the other cloud is probably oriented differently unless both clouds are yet aligned) and translation (scale invariant is not a property we are interested here since we assume cameras are calibrated). This description is usually based on geometric features (relative position or density of its neighbors) and/or color features (color distribution around the point). \\
-    Due to the poor quality of the point cloud, especially in the region where we are searching for keypoints matching, I chose to use the \acrshort{cshot} estimator that is extracting features from color information as well as 3D shape as explained in \cite{tombari2011}.
+    For each keypoint, we want to be able to find the most similar keypoint in the second cloud, so it is needed to describe the point surrounding in a way that is invariant to rotation (its equivalent point in the other cloud is probably oriented differently unless both clouds are yet aligned) and translation (scale invariant is not a property we are interested in here since we assume cameras are \glslink{intrinsic}{intrinsicly} calibrated). This description is usually based on geometric features (relative position or density of its neighbors) and/or color features (color distribution around the point). \\
+    Due to the poor quality of the point cloud, especially in the region where we are searching for keypoints matching, I chose to use the \acrshort{cshot} estimator from \acrshort{pcl} library that is extracting features from color information as well as 3D shape as explained in \cite{tombari2011}.
     
 \subsection{Matching}
 
     These descriptors can now be matched by finding most similar points by comparing their features. For each point of the source point cloud we have to measure the distance with every points in the target cloud to find the closest. \\
-    This process can then be really slow, to fasten this search, it is common to use KD-Trees. Given one set of features computed for every points in one of our clouds, we are building a tree such that each node divide the tree in 2 sub-trees in which every points' coordinate (in the feature space) is whether bigger or smaller than the median value for one particular axis. This process is repeated successively for every axis until every point is represented by a singular node or leaf. This algorithm can be written recursively in this way:
+    This process can then be really slow, to fasten this search, it is common to use KD-Trees. Given one set of features computed for every points in one of our clouds, we are building a tree such that each node divide the tree in 2 sub-trees in which every points' coordinate (in the feature space) is whether bigger or smaller than the median value for one particular axis. This process is repeated successively for every axis until every point is represented by a singular node or leaf. This algorithm can be written recursively as detailed in alg. \ref{alg:kdtree}.
     
     \begin{algorithm}
         \caption{KD-Tree}\label{alg:kdtree}
@@ -127,7 +151,7 @@ There are a lot of different ways to perform registration using 3D points matchi
     \begin{figure}[h!]
         \centering
         \includegraphics[width=\textwidth]{images/kp_matches.png}
-        \caption{\acrshort{iss} keypoints matched between both cameras (same color = match).}
+        \caption{\acrshort{iss} keypoints matched between both views (same color = match).}
         \label{fig:iss_match}
     \end{figure}
     
@@ -135,25 +159,25 @@ There are a lot of different ways to perform registration using 3D points matchi
 
     It is then often required to refine the previous matching by eliminating undesired matches such as if several points are matching with the same target point (we'll then keep only the best match, ie. with the smallest descriptor distance), called duplicates, points that are too far (in space) according to the initial guess or points with descriptor distance over a given threshold.
     
-\subsection{Transform Estimation} 
+\subsection{Transform Estimation} \label{subsec:transf_est}
     
-    The last step is then to estimate the transform that brings source matched points to their corresponding target points. Let $p_i^s, \:p_i^t$ be the $i^{th}$ matching pair of points (whose coordinates are expressed with respect to their centroids $p'^s$ and $p'^t$) from source and target point clouds. Stacking $N$ matching points into $3\times N$ matrices $P^s = \left ( p_0^s,\:p_1^s, \cdots  \right )$ and $P^t$, we can write $\mathcal{T}$ as the solution of $\mathcal{T}P^s = P^t$. As no exact solution can be founds with real data, we want to find the transform $\mathcal{T}$ minimizing the quadratic error $\sum_i\left | p_i^t - \mathcal{T}p_i^s \right |^2$. \\
+    The last step is then to estimate the transform that brings source matched points to their corresponding target points. Let $p_i^s, \:p_i^t$ be the $i^{th}$ matching pair of points (whose coordinates are expressed with respect to their centroids $p'^s$ and $p'^t$) from source and target point clouds. Stacking $N$ matching points into $3\times N$ matrices $P^s = \left ( p_0^s,\:p_1^s, \cdots  \right )$ and $P^t$, we can define $\mathcal{T}$ as the solution of $\mathcal{T}P^s = P^t$. As no exact solution can be founds with real data, we want to find the transform $\mathcal{T}$ minimizing the quadratic error $\sum_i\left | p_i^t - \mathcal{T}p_i^s \right |^2$. \\
     We can find separately the rotation and translation parts of the transform $R$, $t$ such that 
     $\mathcal{T}=\begin{pmatrix}
     R & t\\ 
     0 & 1
     \end{pmatrix}$.
-    The least-square solution can be derived as detailed in \cite{sork2017}, for the rotation part is given by: 
+    The least-square solution can be derived as detailed in \cite{sork2017}, rotation part is given by: 
     \[
     R=U\begin{pmatrix}
     1 &  & \\ 
      & 1 & \\ 
-     &  & det(UV^T))
-    \end{pmatrix}V^T
+     &  & det(UV^\top))
+    \end{pmatrix}V^\top
     \]
-    Where $U$ and $V$ are computed from the \acrshort{svd} decomposition of the $3\times 3$ correlation matrix $K$:
+    Where $U$ and $V$ are computed from the \acrshort{svd} of the $3\times 3$ correlation matrix $K$:
     \[
-    K=UDV^T=\sum_i p_i^t{p_i^s}^T
+    K=UDV^\top=\sum_i p_i {p_i^s}^\top
     \]
     Then $t$ can simply be computed as the vector: 
     \[
@@ -161,12 +185,36 @@ There are a lot of different ways to perform registration using 3D points matchi
     \]
 
 % ***************************************************************************
-\section{Plane detection}
+\section{Plane detection} \label{sec:plane_detection}
 % ***************************************************************************
 
-An other interesting method that can be found in some papers is based on plane detection and matching. This method can solve the issue caused by low overlapping. Indeed, planes can be used to estimate how to merge the point clouds so that the overlapping region is continuous, but the interesting property is that the plane equation can be computed with every point that lies into the plane model whether it is in the overlapping region or not. Thus, if the cloud contains large plains that can be identified with a large number of points spread in a large part of the point cloud, the confidence on this plane's equation will be far better than if we try to identify features in the overlapping region. \\
+An other interesting method that can be found in some papers is based on plane detection and matching. This method can solve the issue caused by low overlapping. Indeed, planes can be used to estimate how to merge point clouds such that planes from the , but the interesting property is that the plane equation can be computed with every point that lies into the plane model whether it is in the overlapping region or not. Thus, if the cloud contains large plains that can be identified with a large number of points spread in a large part of the point cloud, the confidence on this plane's equation will be far better than if we try to identify features in the overlapping region. \\
 However, to determine the whole 6 degrees of freedom of the transformation between camera positions, we would need 3 non-degenerate planes (ie. which normals describe a basis, the more orthogonal the better) to match in both point clouds. This condition is often too constraining to be satisfied, or is satisfied only if considering small and/or almost degenerate sets of planes. In this case, the accuracy gain provided by the plane identification is lost and one degree of freedom is left with a lot of uncertainty. Nevertheless, in most cases we can at least fix quite accurately the rotation between clouds (2 planes needed). \\
-To apply this technique, I have used PCL's RANSAC implementation in order to achieve plane detection (fig. \ref{fig:planes}). Similarly to the previous registration method, the next step consists in matching extracted planes. \\
+To apply this technique, I have used \acrshort{ransac} algorithm in order to achieve plane detection (fig. \ref{fig:planes}). 
+
+This algorithm is detailed in alg. \ref{alg:ransac} in the case of plane detection, we have to repeatedly pick random points (3 to identify a plane model) and build the corresponding model to count how many points are lying to this model with a given threshold. This process is iterated a given number of times, the best model (with the largest number of inliers) is then returned as the more accurate estimation for this set of points.
+
+\begin{algorithm}
+        \caption{RANSAC}\label{alg:ransac}
+        \REQUIRE $cloud$ is the point cloud data\\
+        \REQUIRE $n$ the number of iteration needed\\
+        \REQUIRE $\varepsilon$ is the inlying threshold
+        \begin{algorithmic}[1]
+            \Function{ransac}{$cloud$, $k$, $\varepsilon$}
+            \State $n_{max} = 0$
+                \State FOR $i$ from $0$ to $k$
+                \State \qquad randomly choose 3 points from cloud 
+                \State \qquad Build the plane model $\mathcal{P}$ containing these points
+                \State \qquad $n \longleftarrow$ number of points in cloud which distance to $\mathcal{P}$ is smaller than $\varepsilon$
+                \State \qquad IF $n > n_{max}$
+                \State \qquad\qquad $n_{max} \longleftarrow n$
+                \State \qquad\qquad $\mathcal{P}_{best} \longleftarrow \mathcal{P}$
+                \State \Return $\mathcal{P}_{best}$
+            \EndFunction
+        \end{algorithmic}
+    \end{algorithm}
+
+Similarly to the previous registration method, the next step consists in matching extracted planes. \\
 
 \begin{figure}[h!]
     \centering
@@ -175,23 +223,24 @@ To apply this technique, I have used PCL's RANSAC implementation in order to ach
     \label{fig:planes}
 \end{figure}
     
-My first try was to match using feature matching in the same way as I did with keypoints descriptors but using global descriptors (descriptors that contains information on the entire plane). However, due to the similarity of planes in this particular scene (here, every planes is detected as an almost entirely white rectangle which fails the matching algorithm most of the time). Another technique could be to simply use brute force, since we are usually not trying to detect a lot of planes (we need 3 of them), by trying every possible matching we could make sure to keep the one that ends with the best registration result. Nevertheless this technique should better be applied to improve the matching after the whole registration process is implemented and optimized to reduce the computation speed, otherwise, repeating the process for every 6 matching possibilities may be too demanding. \\
-For this reason I preferred to match planes by normal similarity, this technique doesn't rely on the later use of plane matches and is simple to implement. The only requirement is not to have a huge orientation difference between cameras. We may want to eliminate this assumption later but, for testing and comparison purpose, this method should be sufficient because it is highly reliable under this assumption and requires few computations. \\
+My first try was to match using feature matching in the same way as I did with keypoints descriptors but using global descriptors (descriptors that contains information on the entire plane). However, due to the similarity of planes in this particular scene (here, every planes is detected as an almost entirely white rectangle which fails the matching algorithm most of the time). Another technique could be to simply use brute force, since we are usually not trying to detect a lot of planes (we need 3 of them), by trying every possible matching we could make sure to keep the one that ends with the best registration result. Nevertheless this technique should only be used after optimizing the computation speed and ensuring that we can afford to multiply processing time by 6 (at least, when we want to detect only 3 planes) since for each possible match we have to perform the complete registration process and then conclude which of the 6 results is more likely to be correct. \\
+A simpler but still efficient way I implemented this matching was using planes normals and matching planes with the more similar orientation (details are given in sec. \ref{sec:plane_matching}). This way, as long as both point clouds are not built from 2 sensors with completely different orientation, the matching will be done correctly. To avoid wrong matching when cameras are flipped, a previous step to find a rough estimation of the transform may be needed.
+Matching result can be seen in fig. \ref{fig:planes_scene}.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\textwidth]{images/planes_scene.png}
-    \caption{End result of plane matching with both cameras, $n=4$.}
+    \caption{Planes matching result, $n=3$.\\In both cameras, matching planes are drawn with the same color.}
     \label{fig:planes_scene}
 \end{figure}
 
 The last step is to estimate the rigid transform that minimize plane-to-plane matching error as suggested in \cite{khoshelham2016}. 
 \newline
-If we define a plane as the vector $\pi=(n^T, -\rho)$ (normal vector and distance to origin) that satisfy for every point $p$ of this plane the equation:
-\[\pi p=0\]
-And let $H$ be the transform between point clouds A and B such that:
+A plane is defined as a 4D vector $\pi=(n^\top, -\rho)$ (normal vector and distance to origin) that satisfy for every point $p=(x, y, z, 1)$ of this plane the equation:
+\[\pi p = n\cdot p_{xyz} - \rho = 0\]
+If $H$ is the transform between point clouds A and B such that:
 \[p^B = Hp^A\]
-We can define $H'$ the transform that brings any plane equation in A $\pi^A$ to its corresponding plane in point cloud B $\pi^{B}$. We can demonstrate that: \[H'=H^-T\]
+We can define $H'$ the transform that brings any plane equation in A, $\pi^A$, to its corresponding plane in point cloud B $\pi^{B}$. We can demonstrate () that: \[H'=H^{-\top}\]
 Finding $H$ is then the same as finding $H'$ that minimize plane distances: \[\pi^B_i=H'\pi^A_i\]
 If we write:
 \[H'=\begin{bmatrix}
@@ -200,23 +249,31 @@ R & t\\
 \end{bmatrix}\]
 We then have for each matching planes:
 \[\left\{\begin{matrix}
-{n_i^B}^TR={n_i^A}^T\\ 
-{n_i^B}^Tt=\rho_i^B-\rho_i^A
+{n_i^B}^\top R={n_i^A}^\top\\ 
+{n_i^B}^\top t=\rho_i^B-\rho_i^A
 \end{matrix}\right.\]
 By stacking all $n$ vectors into a matrix $N$ and all $\rho_i^B-\rho_i^A$ into a vector $d$, the problem became:
 \[\left\{\begin{matrix}
 N^BR=N^A\\ 
 N^Bt=d
 \end{matrix}\right.\]
-We can then simply compute the least square solutions for any n-dimensional distance metric where n is the number of matches. Especially, a useful metric could be for any n-d weight matrix $W$:
-\[\mathcal{D}(x,y)=a^TWb\]
-This metric will allow to weight some planes differently according to the confidence we give to the precision of their plane detection, otherwise $W=I_n$ will be used.
+We can then simply compute the least square solutions for any n-dimensional distance metric where n is the number of matches. Especially, a useful metric could be for any n-d weight matrix $W$ (most likely diagonal):
+\[\mathcal{D}(x,y)=x^\top Wy\]
+This metric will allow to weight some planes differently according to the confidence (measured with point-plane distance standard deviation, total number of points etc.) we give to the precision of their plane detection, otherwise $W=I_n$ will be used.
 The final solution is:
 \[\left\{\begin{matrix}
-\tilde{t}=({N^B}^TWN^B)^{-1}{N^B}^TWd\\ 
-\tilde{R}=({N^B}^TWN^B)^{-1}{N^B}^TWN^A
+\tilde{t}=({N^B}^\top WN^B)^{-1}{N^B}^\top Wd\\ 
+\tilde{R}=({N^B}^\top WN^B)^{-1}{N^B}^\top WN^A
 \end{matrix}\right.\]
 
-At the end we can then ensure the orthogonality of $R$ using SVD decomposition. \\
+At the end we can then ensure the orthogonality of $R$ using \acrshort{svd} decomposition. Finally we apply this rigid transform to the camera to create the final point cloud (fig. \ref{fig:planes_reg}).\\
 
-The main limitation of this technique is that the scene needs to have large planes in it, but it is really common in indoor environments. However, having 3 large matching planes is lot more difficult, this is again an indirect consequence of the lack of overlapping. To identify 3 planes means that the sensor is seeing a corner but it is not probable being able to see this corner in both views if the overlapping is small, moreover even if we do, the corner will be in the border of both view, meaning at least one plane will be small. To summarize, we can't expect to detect required planes by luck. We may be able to use this algorithm in some specific cases but it is not possible to plan to use it if we don't have knowledge of the scene.
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{images/reg2.png}
+    \caption{End result of plane matching with both cameras, $n=4$.}
+    \label{fig:planes_reg}
+\end{figure}
+
+To compute the rigid transform accurately with this technique it is needed to detect large planes inside point clouds. hopefully it is really common in indoor environments to detect such primitives. However, this registration method requires 3 large non-degenerated (the more orthogonal the planes are, the better will be the result) pairs of planes which is a lot more restrictive, this is again a< consequence of the lack of overlapping. To identify 3 planes means that the sensor is seeing a corner but it is not probable to be able to see this corner in both views if the overlapping is small, moreover even if we do, the corner will be in the border of both view, meaning at least one plane will be small. In our setup, I chose to add manually a $3^{rd}$ (artificial) plane in the overlapping region to be able to run this algorithm (as seen in fig. \ref{fig:planes_reg}). Even by choosing manually this plane it was not possible to place it such that both view contains a large part of this plane, the uncertainty of the computation is then decreased. Moreover the deformation of the point cloud in this region makes the y translation estimation inaccurate.
+To summarize, we can't expect to detect all 3 required planes. We may be able to use this algorithm in some specific cases but it requires to have knowledge of the scene and to know in advance that this scene fulfill these specific requirements which is not our case.

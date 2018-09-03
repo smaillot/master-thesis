@@ -6,7 +6,7 @@
 
 \NeedsTeXFormat{LaTeX2e}[1996/12/01]
 \ProvidesClass{Thesis}
-              [2007/22/02 v1.0
+              [2018/15/08 v1.0
    LaTeX document class]
 \def\baseclass{book}
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{\baseclass}}
@@ -184,34 +184,47 @@
   \hypersetup{pdfkeywords=\keywordnames}
   \thispagestyle{empty}
   \begin{titlepage}
+      \begin{center}
+        \includegraphics[width=0.8\textwidth]{images/icons/upc2.jpg}
+      \end{center}
     \let\footnotesize\small
     \let\footnoterule\relax
     \let \footnote \thanks
     \setcounter{footnote}{0}
-    \null\vfil
-    \vskip 60\p@
+    \null
+    \vskip 20\p@
     \begin{center}
       \setlength{\parskip}{0pt}
-      {\large\textbf{\UNIVNAME}\par}
-      \vfill
       {\huge \bf \@title \par}
-      \vfill
-      {\LARGE by \par}
       \smallskip
-      {\LARGE \authornames \par}
-      \vfill
+      \vspace{2cm}
+     
+        \vfill
+        \begin{minipage}[t]{0.4\textwidth}
+        \begin{flushleft} \large
+        \emph{Author:}\\
+        {\authornames} % Author name - remove the \href bracket to remove the link
+        \end{flushleft}
+        \end{minipage}
+        \begin{minipage}[t]{0.4\textwidth}
+        \begin{flushright} \large
+        \emph{Supervisor/s:} \\
+        {\supname} % Supervisor name - remove the \href bracket to remove the link  
+        \end{flushright}
+        \end{minipage}\\[3cm]
+     
       {\large A thesis submitted in partial fulfillment for the \par}
       {\large \degreename \par}
       \bigskip
       \bigskip
-      {\large in the \par}
+      {\large in the \hspace{0.2em} \par}
       {\large \facname \par}
       {\large \deptname \par}
       \bigskip
-      \bigskip
+      \vspace{0.5cm}
+      \includegraphics[]{images/icons/etseib_small.jpg}\\
       \bigskip
       {\Large \@date \par}
-      \bigskip
     \end{center}
     \par
     \@thanks
