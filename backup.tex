@@ -1,0 +1,19 @@
+Each registration method is applied to estimate cameras relative positions on a recorded sequence containing 300s records for both kinect sensors. ICP method is applied in 3 different ways:
+
+\begin{itemize}
+    \item \emph{ICP} is the classical way of applying \acrshort{icp} for registration, we try to match one cloud with the other
+    \item In \emph{ICP\_PointCloud} I apply the \acrshort{icp} for each point cloud to match with a given cloud of the complete scene. This cloud is a reconstruction previously prepared from both views, this techniques obviously requires a prior knowledge but it is good as a comparison with other methods. This point cloud contains objects on the table which may fail the \acrshort{icp} as it would try to match different shapes form the live point clouds.
+    \item \emph{ICP\_CAD\_model} is the same method than the previous one but using a point cloud generated from a \acrshort{cad} model of the scene instead of a real reconstruction of the scene. This model doesn't contain any object that could help registration (especially the y translation).
+\end{itemize}
+Only the first method is satisfying our requirements for this work (no previous knowledge), the 2 others are applied for comparison purpose but assume that we have already solved the registration problem (reconstructed point cloud) or that we have a perfect knowledge of the expected result (\acrshort{cad}model). \\
+Other methods are the ones explained in the previous sections:
+\begin{itemize}
+    \item \emph{plane\_matching}, registration using only plane matching, thus a $3^{rd}$ plane is added as explained in section \ref{sec:plane_detection}
+    \item \emph{keypoints\_matching}, using only keypoint matching from section \ref{sec:3dkp}
+    \item \emph{my\_method}, the method detailed in section \ref{chapt:implementation}, mixing both previous techniques.
+\end{itemize}
+
+
+    ICP             & 4.0  \\ \hline
+    ICP\_PointCloud & 10.3 \\ \hline
+    ICP\_CAD\_Model & 7.8  \\ \hline

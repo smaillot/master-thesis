@@ -16,12 +16,14 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{float}
+\usepackage{multirow}
 
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
 % \usepackage[backend=bibtex,style=verbose-trad2]{biblatex}
 
 \usepackage[acronym]{glossaries}
+\usepackage{glossaries-extra}
 \makeglossaries
 \input{glossary}
 \input{acronym}
@@ -31,6 +33,8 @@
 \setlength{\parindent}{1cm}
 
 \begin{document}
+\setcounter{page}{-100}
+\frontmatter
 
 \thiswatermark{\centering \put(-48, -600){\includegraphics[scale=2.3]{icons/etseib.png}} }
 \maketitle
@@ -67,7 +71,6 @@
 \clearpage  
 \pagestyle{empty}  
 
-\mainmatter	  % Begin normal, numeric (1,2,3...) page numbering
 \pagestyle{fancy}  % Return the page headers back to the "fancy" style
 
 \addcontentsline{acronym}{newacronym}{shot} 
@@ -75,22 +78,25 @@
 % transform cam1->cam2
 
 \input{chapters/Preface} 
+\mainmatter	  % Begin normal, numeric (1,2,3...) page numbering
 \input{chapters/Introduction} 
 \input{chapters/StateOfTheArt} 
 \input{chapters/Implementation}
 \input{chapters/Methodology} 
 \input{chapters/Results}
 \input{chapters/Conclusion}
-\input{chapters/FutureWork}
+%\input{chapters/FutureWork}
 
 \clearpage
 \printglossary[type=\acronymtype]
+\addcontentsline{toc}{chapter}{Acronyms}
+\printglossary
+\addcontentsline{toc}{chapter}{Glossary}
 \listoffigures
 \listoftables
-\printglossary
 
 \bibliographystyle{alpha}
 \bibliography{references}
-\addcontentsline{toc}{chapter}{Bibliography}
+\addcontentsline{toc}{chapter}{References}
 
 \end{document}

@@ -5,8 +5,8 @@
 % ***************************************************************************
 
 All the above mentioned techniques appear to be efficient only under specific constrains. In our scenario none of them can be applied directly and we have to find a more suitable procedure for this project. \\
-Even for humans, manually calibrating these point clouds is a hard task. Due to the lack of overlapping, it is difficult to notice whether a transform is wrong or not when focusing only on closest points matching (similarly to ICP algorithm). However, knowing that this is a scene containing large planes that can be seen in both views, we naturally tend to estimate the correctness of the registration by judging if the final result is coherent or not, if the planes are aligned or not (this is similar to plane matching). \\
-Both this methods are used by our brain in the same time to evaluate how coherent is the matching. In the same way, our program have to mix both techniques to get the best result. This approach is similar to the ones experimented in \cite{aravindh}, \cite{mdou2013} and \cite{ytaguchi2013}.\\
+Even for humans, manually calibrating these point clouds is a hard task. Due to the lack of overlapping, it is difficult to notice whether a transform is wrong or not when focusing only on closest points matching (similarly to \acrshort{icp} algorithm). However, knowing that this is a scene containing large planes that can be seen in both views, we naturally tend to estimate the correctness of the registration by judging if the final result is coherent or not, if the planes are aligned or not (this is similar to plane matching). \\
+Both this methods are used by our brain in the same time to evaluate how coherent is the matching. In the same way, our program have to mix both techniques to get the best result. Some similar approaches are described in the literature. The registration can be performed in one step, mixing keypoints (2D or 3D) and plane primitives as implemented in \cite{mdou2013} and \cite{ytaguchi2013} or in 2 steps \cite{pkim16}, in this case keypoints are used as a robust method to register 2 similar point clouds while plane matching is used in a second registration process to improve point cloud alignment. This 2 steps methods can't be applied to low-overlapping point clouds because, as explained in chapter \ref{ch:soa}, both methods can't be applied separately in this case.\\
 \newline
 As we have seen, the most reliable information we have is given by planes that are visible from both cameras. The first step would then be to identify as many planes as possible. Depending on how many planes we can match, the remaining degrees of freedom will be fixed with keypoints matching. \\
 In this scene two mains plane can be identities, which means only one translation remains to be solved. Thus, only one point is needed, in theory, to solve the registration completely. The problem is that the point cloud quality doesn't let us find perfect matches. I will then try to identify as many matches as possible so that, on average, the error is lowered. \\
@@ -65,7 +65,7 @@ Finally, point cloud filtering is also a way I considered to decrease the size o
 
 \section{Plane Detection}
 
-The first processing step consists in extracting planes from the point clouds. I am using \acrshort{ransac} (detailed in alg. \ref{alg:ransac}) algorithm to detect the most relevant plane of the cloud. I used \acrshort{pcd} library implementation of this algorithm to perform fast plane detection.
+The first processing step consists in extracting planes from the point clouds. I am using \acrshort{ransac} (detailed in alg. \ref{alg:ransac}) algorithm to detect the most relevant plane of the cloud. I used \acrshort{pcd} \gls{library} implementation of this algorithm to perform fast plane detection.
 
 When we find a good model, if we note $w$ the ratio between the number of inlying points and the total number of points, we can estimate the number of iterations needed to be confident enough that a correct model has been found. For example if we iterate the algorithm $k$ times, success probability $p$ can be written:
 \[
@@ -82,14 +82,56 @@ When the first plane is extracted, we can continue by subtracting inliers from t
 
 \section{Plane Matching} \label{sec:plane_matching}
 
-The plane matching consists in matching as many planes as possible between different cameras. These planes should be matched when they correspond to the same plane in the real scene. \\
-As explained for the implementation of the plane matching registration (sec. \ref{sec:plane_detection}), I first tried to use global descriptors for this task. However, in our case, planes are too similar and this method is not consistently matching planes. \\
-For this reason, I preferred to match planes by normal similarity, this technique doesn't rely on the later use of plane matches and is simple to implement. The only requirement is not to have a huge orientation difference between cameras. This means we need a prior knowledge of the rotation between cameras ($\pm 45^\circ$). Given 2 planes $\pi_1=(n_1^\top, -\rho_1)$ and $\pi_2$ which normal vectors $n$ are chosen such that their product is positive, the metric $f$ I use for matching is the following, with an arbitrary $\alpha = 1\:m^{-1}$:
+Plane matching consists in matching as many planes as possible between different cameras. These planes should be matched when they correspond to the same plane in the real scene. Based on \cite{mdou2013}, I implemented a plane color histogram matching as follow. \\
+By extracting the color data from each point of point cloud subsets corresponding to a plane we can compute a color histogram representing color distribution in a given color space. This space can be \acrshort{rgb} or \acrshort{hsv} and can be computer for 3 1D color channels (fig. \ref{fig:color_hist}) or for a 3D color space (fig. \ref{fig:3D_hist}).
+
+\begin{figure}
+   \begin{minipage}[t][6cm]{0.33\linewidth}
+        \subfloat{\includegraphics[width=\textwidth]{images/c1p1.png}}
+        \subfloat{\includegraphics[width=\textwidth]{images/c1p2.png}}
+        \subfloat{\includegraphics[width=\textwidth]{images/c1p3.png}}
+    \end{minipage}%
+    \begin{minipage}[t][6cm]{0.33\linewidth}
+        \subfloat{\includegraphics[width=\textwidth]{images/c2p1.png}}
+        \subfloat{\includegraphics[width=\textwidth]{images/c2p2.png}}
+        \subfloat{\includegraphics[width=\textwidth]{images/c2p3.png}}
+    \end{minipage}
+    \begin{minipage}[t][6cm]{0.33\linewidth}
+        \subfloat{\includegraphics[width=\textwidth]{images/c3p1.png}}
+        \subfloat{\includegraphics[width=\textwidth]{images/c3p2.png}}
+        \subfloat{\includegraphics[width=\textwidth]{images/c3p3.png}}
+    \end{minipage}
+    \vspace{4em}
+    \caption{Planes RGB color histograms computed for 3 cameras on 3 different planes (table, wall and wooden plate), each line represents a plane, each column represents a camera. }\label{color_hist}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.8\textwidth]{images/kmeans_3D_hist.png}
+\caption{2D projections of 3D color histograms for each planes. Lines correspond to plane 1 seen from cam1 (line 1) and from cam2 (line 2) then plane 2 (lines 3, 4) and plane 3 (lines 5, 6). Centroids of K-mean clustering (k=5) are shown with the corresponding color.}
+\label{fig:3D_hist}
+\end{figure}
+
+Depending on the type of histogram different distance metrics can be used. As suggested in \cite{mdou2013}, overlapping areas can be computed for 1D histograms. I also performed K-means clustering on 3D histograms to determine the k=5 most common colors in each plane, it can be seen on fig. \ref{fig:3D_hist} that all colors are mostly grey which makes the matching difficult. It is then easy to compute a distance (Euclidian or Manhattan distance) between these centroids to find best matches. Given a plane color histogram from plane 3, I plot the distance to other planes color histograms captured from the 3 planes on both cameras on fig. \ref{fig:color_dist}. \
+
+However, none of these techniques achieves a robust matching due to the very similar colors in each plane and the very low number of common points shared by planes seen from different cameras.
+    
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.6\textwidth]{images/dst_hist.png}
+\caption{Distance between K-Means centroids computed between planes color histograms from different cameras and time and a color histogram from plane 3 seen from cam 1.}
+\label{fig:color_dist}
+\end{figure}
+
+
+
+As explained in section \ref{sec:plane_detection}, I also tried to use \acrshort{pcl} \acrshort{vfh} global descriptor for matching planes. This techniques didn't allow me to match planes robustly neither.
+For this reason, I preferred to match planes by comparing normals, this technique doesn't rely on the later use of plane matches and is simple to implement. The only requirement is not to have a huge orientation difference between cameras. This means we need a prior knowledge of the rotation between cameras ($\pm 45^\circ$). Given 2 planes $\pi_1=(n_1^\top, -\rho_1)$ and $\pi_2$ which normal vectors $n$ are chosen such that their product is positive, the metric $f$ I use for matching is the following, with an arbitrary $\alpha = 1\:m^{-1}$:
 \[
     f(\pi_1, \pi_2) = n_1\cdot n_2 - \alpha \left | \rho_1 - \rho_2 \right |
 \]
 
-The first term $n_1\cdot n_2$ measures the cosine of normals angle between 0 when they are perpendicular and 1 when they point in the same direction (planes are parallel). The second term lowers this value if planes are far from each other. It allows planes to match with the right plane instead of an other parallel one.
+The first term $n_1\cdot n_2$ measures the cosine of normals angle between 0 (when they are perpendicular) and 1 (when they are parallel). The second term lowers this value if planes are far from each other. It allows planes to match with the right plane instead of an other parallel one.
 
 \section{Keypoint Extraction}
 

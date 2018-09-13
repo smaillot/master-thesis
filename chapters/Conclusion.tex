@@ -4,5 +4,7 @@
 \chapter{Conclusion}
 % ***************************************************************************
 
-According to our results, this method mixing planes and keypoints matching leads to better results in this project. Indeed this method obtains the smallest error in translation over all the methods tested. For the rotation part, plane matching is performing as good as the mixed method in average (even slightly better but not significantly) but has a larger standard deviation. 
-From these measures we can clearly see that matching methods (keypoints, planes and mixed) perform a lot better on this registration problem than ICP methods, 
+According to our results, this method mixing planes and keypoints matching leads to better results in this project. Indeed this method obtains the smallest error in translation over all the methods tested. For the rotation part, plane matching is performing as good as the mixed method in average but has a larger standard deviation. 
+From these measures we can clearly see that matching methods (keypoints, planes and mixed) perform a lot better on this registration problem than \acrshort{icp} registration that would require a lot more overlapping. \\
+For our perception system which aims to provide a real-time reconstruction of the scene, this implemented solution can be used to obtain a real-time reconstruction of the scene with few centimeters of error. By averaging the estimations on few seconds we can obtain a more accurate reconstruction but the framerate would be reduced. By only using time filtering we can change the balance between speed and accuracy to adapt to our need. \\
+This algorithm can then be used in this project to calibrate camera for the first time, to fix calibration errors when needed and even track the position of a moving camera in real-time if the system can deal with few centimeters of error.
